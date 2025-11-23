@@ -1,23 +1,24 @@
-# 1. BASE IMAGE: Start with a lightweight, official Node.js image (e.g., Node 20 Slim)
+# 1. Use a specific, stable Node.js image
 FROM node:20-slim
 
-# 2. WORKING DIRECTORY: Set the directory inside the container
-WORKDIR /usr/src/app
+# 2. Install n8n globally and its dependencies first
+# We use the /usr/local/bin directory which is globally visible.
+USER root
+RUN npm install -g n8n@1.64.3  # Use the exact version you want
 
-# 3. CACHING LAYER: Copy only package files first. 
-# This leverages Docker's cache. If only code changes (not dependencies), 
-# this step is skipped on subsequent builds, speeding them up.
-COPY package*.json ./
+# 3. Create the necessary configuration folder and set permissions
+# This is where your SQLite database and credentials are saved (Persistence Mount Point)
+RUN mkdir -p /home/node/.n8n && chown -R node:node /home/node/.n8n
 
-# 4. INSTALL DEPENDENCIES: Install all packages listed in package.json
-RUN npm install
+# 4. Set the working directory (and switch back to a non-root user for security)
+USER node
+WORKDIR /home/node/
 
-# 5. CODE COPY: Copy the rest of the application files (including your workflow JSON)
-COPY . .
+# 5. Copy the rest of your files (including your workflow JSON)
+# We copy them to the home directory of the 'node' user
+COPY --chown=node:node package*.json ./
+COPY --chown=node:node . /home/node/
 
-# 6. PORT: Tell Docker which port the app listens on (standard for n8n is 5678)
-EXPOSE 5678
-
-# 7. START COMMAND: Define the command that runs when the container launches
-# This uses the 'start' script defined in your package.json
-CMD ["npm", "start"]
+# 6. Define the command that runs when the container launches
+# We explicitly run the globally installed n8n
+CMD ["n8n", "start", "--config=/home/node/.n8n/config"]
