@@ -1,0 +1,27 @@
+{
+  "name": "workflow_automation-1",
+  "version": "1.0.0",
+  "description": "",
+  "main": "index.js",
+"main": "index.js",
+"scripts": {
+  "test": "echo \"Error: no test specified\" && exit 1",
+  "start": "n8n start"  
+},
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/semanaparfait/workflow_automation.git"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "type": "commonjs",
+  "bugs": {
+    "url": "https://github.com/semanaparfait/workflow_automation/issues"
+  },
+  "homepage": "https://github.com/semanaparfait/workflow_automation#readme",
+  "dependencies": {
+    "dotenv": "^17.2.3",
+    "n8n": "^1.64.3"
+  }
+}
