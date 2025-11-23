@@ -1,0 +1,197 @@
+{
+  "name": "My workflow",
+  "nodes": [
+    {
+      "parameters": {
+        "httpMethod": "POST",
+        "path": "/newmovie",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.webhook",
+      "typeVersion": 2.1,
+      "position": [
+        -784,
+        192
+      ],
+      "id": "939c0c58-e79a-476d-b1c9-512f08724644",
+      "name": "Webhook",
+      "webhookId": "={{ $env.WEBHOOK_ID }}"
+    },
+    {
+      "parameters": {
+        "url": "={{ $env.API_URL }}",
+        "authentication": "genericCredentialType",
+        "genericAuthType": "httpBasicAuth",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.3,
+      "position": [
+        -592,
+        272
+      ],
+      "id": "b5401923-dc4c-4fc5-8e53-85452c33112d",
+      "name": "HTTP Request",
+      "credentials": {
+        "httpBasicAuth": {
+          "id": "={{ $env.HTTP_BASIC_AUTH_ID }}",
+          "name": "Unnamed credential"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "fromEmail": "latest@movieland.me",
+        "toEmail": "={{ $json.email }}",
+        "subject": "New Movie Uploaded !!",
+        "html": "=    <div style=\"font-family: Arial, sans-serif; padding: 20px; background: #f7f7f7;\">\n  <div style=\"max-width: 600px; margin: auto; background: #fff; padding: 20px; border-radius: 8px; color: black;\">\n    \n    <h2 >🎬 New Movie Uploaded: <span style=\"color: #d32f2f;\">{{ $json.movie_data.movie_name }}</span></h2>\n\n    <img src=\"{{$json.movie_data.movie_image}}\" alt=\"Movie Image\" style=\"width:20%; border-radius: 8px;\">\n\n\n    <p><strong>Genre:</strong> {{$json.movie_data.movie_genre}}</p>\n    <p><strong>Country:</strong> {{$json.movie_data.movie_country}}</p>\n    <p><strong>Release Date:</strong> {{$json.movie_data.movie_released_date}}</p>\n    <p><strong>Provider:</strong> {{$json.movie_data.category_name}}</p>\n\n    <hr>\n\n    <h3>🎥 Watch or Download</h3>\n        <a href=\"https://movieland.me/\">Watch now</a>\n\n    <hr>\n\n    <p><strong>Uploaded At:</strong> {{$json.movie_data.created_at}}</p>\n    <p><strong>Provider:</strong> {{$json.movie_data.category_name}}</p>\n\n    <hr>\n    <p style=\"text-align: center; color: #888;\">© Movieland – Latest Movies Delivered Instantly</p>\n  </div>\n</div>",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.emailSend",
+      "typeVersion": 2.1,
+      "position": [
+        96,
+        112
+      ],
+      "id": "80d3975e-6370-4694-8cfa-fe2e5e7017bc",
+      "name": "Send email",
+      "webhookId": "={{ $env.SEND_EMAIL_WEBHOOK_ID }}",
+      "credentials": {
+        "smtp": {
+          "id": "iU9gqS0m01IBdceB",
+          "name": "SMTP account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "options": {}
+      },
+      "type": "n8n-nodes-base.splitInBatches",
+      "typeVersion": 3,
+      "position": [
+        -336,
+        192
+      ],
+      "id": "{{ $env.LOOP_NODE_ID }}",
+      "name": "Loop Over Items"
+    },
+    {
+      "parameters": {},
+      "type": "n8n-nodes-base.noOp",
+      "name": "Replace Me",
+      "typeVersion": 1,
+      "position": [
+        -176,
+        272
+      ],
+      "id": "2b802a2b-c8b6-4f3b-a30f-ab9c2af7b3b0"
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "eb992613-96ee-4065-ba1d-bdf11cd1a863",
+              "name": "=movie_data",
+              "value": "={{ $('Webhook').item.json.body }}",
+              "type": "object"
+            }
+          ]
+        },
+        "includeOtherFields": true,
+        "include": "except",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        -288,
+        -16
+      ],
+      "id": "ca90d65c-4772-4198-86e7-297e66be2872",
+      "name": "Edit Fields"
+    }
+  ],
+  "pinData": {},
+  "connections": {
+    "Webhook": {
+      "main": [
+        [
+          {
+            "node": "HTTP Request",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "HTTP Request": {
+      "main": [
+        [
+          {
+            "node": "Loop Over Items",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Send email": {
+      "main": [
+        []
+      ]
+    },
+    "Loop Over Items": {
+      "main": [
+        [
+          {
+            "node": "Edit Fields",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Replace Me",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Replace Me": {
+      "main": [
+        [
+          {
+            "node": "Loop Over Items",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Edit Fields": {
+      "main": [
+        [
+          {
+            "node": "Send email",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": true,
+  "settings": {
+    "executionOrder": "v1"
+  },
+  "versionId": "={{ $env.VERSION_ID }}",
+  "meta": {
+    "templateCredsSetupCompleted": true,
+    "instanceId": "={{ $env.INSTANCE_ID }}"
+  },
+  "id": "{{ $env.WORKFLOW_ID }}",
+  "tags": []
+}
