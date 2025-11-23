@@ -21,4 +21,4 @@ COPY --chown=node:node . /home/node/
 
 # 6. Define the command that runs when the container launches
 # We explicitly run the globally installed n8n
-CMD ["n8n", "start", "--config=/home/node/.n8n/config"]
+CMD ["n8n", "start"]
